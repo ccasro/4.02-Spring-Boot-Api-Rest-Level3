@@ -121,4 +121,27 @@ public class OrderControllerTest {
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2));
     }
+
+    @Test
+    void shouldReturnOrderWhenIdExists() throws Exception {
+        Order saved = orderRepository.save(
+                new Order(null, "Charlie", LocalDate.now().plusDays(1),
+                        List.of(new OrderItem("Kiwi", 2)))
+        );
+
+        mockMvc.perform(get("/orders/" + saved.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(saved.getId()))
+                .andExpect(jsonPath("$.clientName").value("Charlie"))
+                .andExpect(jsonPath("$.items[0].fruitName").value("Kiwi"))
+                .andExpect(jsonPath("$.items[0].quantityInKilos").value(2));
+    }
+
+    @Test
+    void shouldReturn404WhenOrderDoesNotExist() throws Exception {
+        mockMvc.perform(get("/orders/non-existing-id"))
+                .andExpect(status().isNotFound());
+    }
+
+
 }
