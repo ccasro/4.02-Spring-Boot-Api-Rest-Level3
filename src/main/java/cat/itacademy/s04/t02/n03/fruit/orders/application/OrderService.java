@@ -5,6 +5,7 @@ import cat.itacademy.s04.t02.n03.fruit.orders.dto.OrderResponseDTO;
 import cat.itacademy.s04.t02.n03.fruit.orders.mapper.OrderMapper;
 import cat.itacademy.s04.t02.n03.fruit.orders.persistence.OrderRepository;
 import cat.itacademy.s04.t02.n03.fruit.shared.exception.BadRequestException;
+import cat.itacademy.s04.t02.n03.fruit.shared.exception.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,5 +32,11 @@ public class OrderService {
     public List<OrderResponseDTO> getAllOrders(){
         return repository.findAll().stream()
                 .map(OrderMapper::toResponseDTO).toList();
+    }
+
+    public OrderResponseDTO getOrderById(String id) {
+        var order = repository.findById(id)
+                .orElseThrow(()-> new OrderNotFoundException(id));
+        return OrderMapper.toResponseDTO(order);
     }
 }
