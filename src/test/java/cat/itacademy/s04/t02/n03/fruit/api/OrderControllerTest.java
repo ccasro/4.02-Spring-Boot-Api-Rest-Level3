@@ -143,5 +143,60 @@ public class OrderControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void shouldUpdateOrderWhenIdExistsAndDataIsValid() throws Exception {
+        Order saved = orderRepository.save(
+                new Order(null, "Old", LocalDate.now().plusDays(1),
+                        List.of(new OrderItem("Apple", 2)))
+        );
 
+        OrderRequestDTO update = new OrderRequestDTO(
+                "New",
+                LocalDate.now().plusDays(2),
+                List.of(new OrderItemRequestDTO("Banana", 5))
+        );
+
+        mockMvc.perform(put("/orders/" + saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(saved.getId()))
+                .andExpect(jsonPath("$.clientName").value("New"))
+                .andExpect(jsonPath("$.deliveryDate").value(LocalDate.now().plusDays(2).toString()))
+                .andExpect(jsonPath("$.items[0].fruitName").value("Banana"))
+                .andExpect(jsonPath("$.items[0].quantityInKilos").value(5));
+    }
+
+    @Test
+    void shouldReturn404WhenUpdatingNonExistingOrder() throws Exception {
+        OrderRequestDTO update = new OrderRequestDTO(
+                "New",
+                LocalDate.now().plusDays(2),
+                List.of(new OrderItemRequestDTO("Banana", 5))
+        );
+
+        mockMvc.perform(put("/orders/non-existing-id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn400WhenUpdatingWithInvalidDeliveryDate() throws Exception {
+        Order saved = orderRepository.save(
+                new Order(null, "Client", LocalDate.now().plusDays(1),
+                        List.of(new OrderItem("Apple", 2)))
+        );
+
+        OrderRequestDTO update = new OrderRequestDTO(
+                "Client",
+                LocalDate.now(),
+                List.of(new OrderItemRequestDTO("Banana", 5))
+        );
+
+        mockMvc.perform(put("/orders/" + saved.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isBadRequest());
+    }
 }
