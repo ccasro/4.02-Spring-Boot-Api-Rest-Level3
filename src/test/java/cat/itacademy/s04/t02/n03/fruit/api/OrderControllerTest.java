@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.mongodb.assertions.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -198,5 +199,23 @@ public class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(update)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldDeleteOrderWhenIdExists() throws Exception {
+        Order saved = orderRepository.save(    new Order(null, "Charlie", LocalDate.now().plusDays(1),
+                List.of(new OrderItem("Kiwi", 2)))
+        );
+
+        mockMvc.perform(delete("/orders/" + saved.getId()))
+                .andExpect(status().isNoContent());
+
+        assertFalse(orderRepository.findById(saved.getId()).isPresent());
+    }
+
+    @Test
+    void shouldReturn404WhenDeletingNonExistentOrder() throws Exception {
+        mockMvc.perform(delete("/orders/non-existing-id"))
+                .andExpect(status().isNotFound());
     }
 }

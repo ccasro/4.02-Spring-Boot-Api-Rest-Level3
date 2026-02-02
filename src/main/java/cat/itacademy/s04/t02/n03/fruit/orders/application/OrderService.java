@@ -59,4 +59,10 @@ public class OrderService {
 
         return OrderMapper.toResponseDTO(saved);
     }
+
+    public void deleteOrder(String id) {
+        var order = repository.findById(id)
+                .orElseThrow(()-> new OrderNotFoundException(id));
+        repository.delete(order);
+    }
 }
