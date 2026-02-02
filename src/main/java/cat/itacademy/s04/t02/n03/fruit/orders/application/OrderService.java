@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,5 +26,10 @@ public class OrderService {
         var entity = OrderMapper.toEntity(dto);
         var saved = repository.save(entity);
         return OrderMapper.toResponseDTO(saved);
+    }
+
+    public List<OrderResponseDTO> getAllOrders(){
+        return repository.findAll().stream()
+                .map(OrderMapper::toResponseDTO).toList();
     }
 }
