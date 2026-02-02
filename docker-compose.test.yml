@@ -1,0 +1,6 @@
+services:
+  mongo-test:
+    image: mongo:6
+    container_name: fruit-mongo-test
+    ports:
+      - "27018:27017"

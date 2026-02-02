@@ -1,0 +1,21 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: fruit-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  app:
+    build: .
+    container_name: fruit-order-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017/fruit_orders
+
+volumes:
+  mongo_data:
