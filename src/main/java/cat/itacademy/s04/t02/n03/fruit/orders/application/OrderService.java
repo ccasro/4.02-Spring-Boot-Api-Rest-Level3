@@ -1,5 +1,6 @@
 package cat.itacademy.s04.t02.n03.fruit.orders.application;
 
+import cat.itacademy.s04.t02.n03.fruit.orders.domain.OrderItem;
 import cat.itacademy.s04.t02.n03.fruit.orders.dto.OrderRequestDTO;
 import cat.itacademy.s04.t02.n03.fruit.orders.dto.OrderResponseDTO;
 import cat.itacademy.s04.t02.n03.fruit.orders.mapper.OrderMapper;
@@ -38,5 +39,24 @@ public class OrderService {
         var order = repository.findById(id)
                 .orElseThrow(()-> new OrderNotFoundException(id));
         return OrderMapper.toResponseDTO(order);
+    }
+
+    public OrderResponseDTO updateOrder(String id, OrderRequestDTO dto){
+        var existing = repository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
+
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        if(dto.deliveryDate().isBefore(tomorrow)){
+            throw new BadRequestException("Delivery date must be at least tomorrow");
+        }
+
+        existing.setClientName(dto.clientName());
+        existing.setDeliveryDate(dto.deliveryDate());
+        existing.setItems(dto.items().stream().map(i -> new OrderItem(i.fruitName(), i.quantityInKilos()))
+                .toList());
+
+        var saved = repository.save(existing);
+
+        return OrderMapper.toResponseDTO(saved);
     }
 }
